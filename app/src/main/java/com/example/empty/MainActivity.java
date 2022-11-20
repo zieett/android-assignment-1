@@ -25,12 +25,15 @@ public class MainActivity extends AppCompatActivity {
     AlertDialog deleteDialog;
     Button deleteButton;
     ArrayList<Course> courses;
+    Intent i;
+    ArrayList<Announcement> announcements1;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         buildAddDialog();
         add = (AppCompatButton) findViewById(R.id.add);
+        i = new Intent(MainActivity.this, CourseDetailActivity.class);
         layout = (LinearLayout) findViewById(R.id.container);
         add.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -40,14 +43,24 @@ public class MainActivity extends AppCompatActivity {
         });
         setCourses();
     }
-
-
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data){
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == 100) {
+            if (resultCode == RESULT_OK){
+                announcements1 = (ArrayList<Announcement>) data.getExtras().getSerializable("announcements");
+                i.putExtra("announcements",announcements1);
+            }
+        }
+    }
     public void setCourses(){
         courses = new ArrayList<Course>();
-        courses.add(new Course("COSC2457","Android Development"));
-        courses.add(new Course("COSC3322","IOS Development"));
-        courses.add(new Course("COSC2545","Software Development"));
-
+        ArrayList<Announcement> announcements = new ArrayList<>();
+        announcements.add(new Announcement("First Announcement","Hello I'am announcement"));
+        announcements.add(new Announcement("Second Announcement","Hello I'am announcement"));
+        courses.add(new Course("COSC2457","Android Development", announcements));
+        courses.add(new Course("COSC3322","IOS Development",announcements));
+        courses.add(new Course("COSC2545","Software Development",announcements));
         for (Course course:courses
              ) {
             View view = getLayoutInflater().inflate(R.layout.course_layout,null);
@@ -66,29 +79,19 @@ public class MainActivity extends AppCompatActivity {
             courseLayout.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    Intent i = new Intent(MainActivity.this, CourseDetailActivity.class);
                     i.putExtra("courseName",name.getText().toString());
                     i.putExtra("courseId",id.getText().toString());
+                    if(!i.hasExtra("announcements")){
+                        System.out.println("trueeeeee");
+                        i.putExtra("announcements",course.getAnnouncement());
+                    }
                     startActivityForResult(i, 100);
                 }
             });
             layout.addView(view);
         }
-    }
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data){
-        super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == 100) {
-            if (resultCode == RESULT_OK){
-                System.out.println("Done");
-            }
-        }
-        if (requestCode == 200) {
-            if (resultCode == RESULT_OK){
+    };
 
-            }
-        }
-    }
     private void buildAddDialog(){
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         View view = getLayoutInflater().inflate(R.layout.add_course_layout,null);
@@ -125,6 +128,21 @@ public class MainActivity extends AppCompatActivity {
         TextView name = view.findViewById(R.id.courseName);
         TextView id = view.findViewById(R.id.courseId);
         Button deleteButton = view.findViewById(R.id.deleteButton);
+        RelativeLayout courseLayout = (RelativeLayout) view.findViewById(R.id.course);
+        courseLayout.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                ArrayList<Announcement> announcements = new ArrayList<>();
+                announcements.add(new Announcement("First Announcement","Hello I'am announcement"));
+                announcements.add(new Announcement("Second Announcement","Hello I'am announcement"));
+                i.putExtra("courseName",name.getText().toString());
+                i.putExtra("courseId",id.getText().toString());
+                if(!i.hasExtra("announcements")){
+                    i.putExtra("announcements",course.getAnnouncement());
+                }
+                startActivityForResult(i, 100);
+            }
+        });
         deleteButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
